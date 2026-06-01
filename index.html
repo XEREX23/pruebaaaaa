@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Galería + Playlist</title>
+  <style>
+    :root {
+      --bg: #0f1020;
+      --card: rgba(255, 255, 255, 0.12);
+      --card-strong: rgba(255, 255, 255, 0.18);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.72);
+      --accent: #ff4ecd;
+      --accent2: #4ee7ff;
+      --shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+      --radius: 26px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f7ff;
+      --card: rgba(255, 255, 255, 0.75);
+      --card-strong: rgba(255, 255, 255, 0.96);
+      --text: #181a2f;
+      --muted: rgba(24, 26, 47, 0.68);
+      --shadow: 0 22px 70px rgba(79, 103, 160, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255, 78, 205, 0.35), transparent 28%),
+        radial-gradient(circle at 85% 18%, rgba(78, 231, 255, 0.28), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(125, 91, 255, 0.28), transparent 38%),
+        var(--bg);
+      overflow-x: hidden;
+      transition: background 0.45s ease, color 0.45s ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 86%);
+      z-index: -2;
+    }
+
+    .blob {
+      position: fixed;
+      width: 360px;
+      height: 360px;
+      border-radius: 999px;
+      filter: blur(34px);
+      opacity: 0.35;
+      z-index: -1;
+      animation: float 9s ease-in-out infinite alternate;
+    }
+
+    .blob.one {
+      top: 90px;
+      left: -110px;
+      background: var(--accent);
+    }
+
+    .blob.two {
+      right: -110px;
+      bottom: 60px;
+      background: var(--accent2);
+      animation-delay: -2s;
+    }
+
+    @keyframes float {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(32px, -28px, 0) scale(1.08); }
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 52px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 14px 44px rgba(255, 78, 205, 0.28);
+      font-size: 1.45rem;
+      transform: rotate(-5deg);
+    }
+
+    h1 {
+      font-size: clamp(1.65rem, 3.8vw, 3.8rem);
+      letter-spacing: -0.06em;
+      line-height: 0.92;
+    }
+
+    .brand p {
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button, .file-label {
+      border: 0;
+      color: var(--text);
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 12px 15px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    button:hover, .file-label:hover {
+      transform: translateY(-2px);
+      background: var(--card-strong);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin: 28px 0 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .hero-card {
+      min-height: 360px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      right: -72px;
+      top: -74px;
+      background: linear-gradient(135deg, rgba(255,78,205,0.35), rgba(78,231,255,0.3));
+      filter: blur(4px);
+    }
+
+    .hero-title {
+      max-width: 650px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title h2 {
+      font-size: clamp(2.1rem, 6vw, 5.2rem);
+      letter-spacing: -0.08em;
+      line-height: 0.88;
+    }
+
+    .hero-title p {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.55;
+      max-width: 640px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.11);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.8rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .dropzone {
+      min-height: 360px;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .dropzone.dragover {
+      outline: 2px dashed var(--accent2);
+      outline-offset: -14px;
+    }
+
+    .drop-inner {
+      width: 100%;
+      padding: 32px 22px;
+      border-radius: 24px;
+      border: 1px dashed rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .drop-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      animation: bounce 1.8s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .drop-inner h3 {
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+    }
+
+    .drop-inner p {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    input[type="file"] { display: none; }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      padding: 16px;
+      margin: 18px 0;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 240px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 0 14px;
+    }
+
+    .search input, .song-input input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 14px 4px;
+      font-size: 0.98rem;
+    }
+
+    .search input::placeholder, .song-input input::placeholder {
+      color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 10px 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 800;
+      transition: 0.2s ease;
+    }
+
+    .chip.active {
+      background: linear-gradient(135deg, rgba(255,78,205,0.85), rgba(78,231,255,0.85));
+      color: #fff;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .gallery {
+      columns: 3 230px;
+      column-gap: 16px;
+      padding: 16px;
+    }
+
+    .photo-card {
+      display: inline-block;
+      width: 100%;
+      margin: 0 0 16px;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      background: rgba(255,255,255,0.1);
+      cursor: zoom-in;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+      transform: translateY(12px);
+      opacity: 0;
+      animation: reveal 0.55s ease forwards;
+    }
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .photo-card img {
+      width: 100%;
+      display: block;
+      min-height: 170px;
+      object-fit: cover;
+      transition: transform 0.45s ease, filter 0.45s ease;
+    }
+
+    .photo-card:hover img {
+      transform: scale(1.07);
+      filter: saturate(1.15) contrast(1.04);
+    }
+
+    .photo-info {
+      position: absolute;
+      inset: auto 10px 10px 10px;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.44);
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: 0.25s ease;
+      color: #fff;
+    }
+
+    .photo-card:hover .photo-info {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .photo-info span {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.78);
+      display: block;
+    }
+
+    .heart {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+    }
+
+    .heart.liked {
+      background: rgba(255,78,128,0.95);
+    }
+
+    .playlist {
+      position: sticky;
+      top: 16px;
+      padding: 16px;
+    }
+
+    .player-shell {
+      border-radius: 24px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 16 / 9;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .now-playing {
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .now-playing small {
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .now-playing h3 {
+      margin: 8px 0 12px;
+      font-size: 1.15rem;
+      line-height: 1.25;
+    }
+
+    .visualizer {
+      height: 54px;
+      display: flex;
+      align-items: end;
+      gap: 6px;
+    }
+
+    .bar {
+      flex: 1;
+      min-width: 5px;
+      border-radius: 999px;
+      background: linear-gradient(to top, var(--accent), var(--accent2));
+      animation: equalize 1.1s ease-in-out infinite alternate;
+      opacity: 0.9;
+    }
+
+    .bar:nth-child(2) { animation-delay: -0.2s; }
+    .bar:nth-child(3) { animation-delay: -0.45s; }
+    .bar:nth-child(4) { animation-delay: -0.75s; }
+    .bar:nth-child(5) { animation-delay: -0.35s; }
+    .bar:nth-child(6) { animation-delay: -0.6s; }
+    .bar:nth-child(7) { animation-delay: -0.15s; }
+    .bar:nth-child(8) { animation-delay: -0.9s; }
+
+    @keyframes equalize {
+      from { height: 16%; }
+      to { height: 95%; }
+    }
+
+    .song-input {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 14px;
+    }
+
+    .song-input input {
+      padding-left: 8px;
+    }
+
+    .song-list {
+      display: grid;
+      gap: 10px;
+      max-height: 390px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .song {
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .song:hover, .song.active {
+      background: var(--card-strong);
+      transform: translateX(3px);
+    }
+
+    .song-cover {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .song strong {
+      display: block;
+      font-size: 0.95rem;
+      line-height: 1.2;
+    }
+
+    .song span {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .mini-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .empty {
+      padding: 38px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(16px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 22px;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox-content {
+      width: min(1050px, 100%);
+      display: grid;
+      gap: 14px;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      margin: auto;
+      border-radius: 26px;
+      box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+    }
+
+    .lightbox-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(20,20,30,0.78);
+      color: #fff;
+      backdrop-filter: blur(12px);
+      z-index: 80;
+      transition: 0.25s ease;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.28);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -12px;
+      border-radius: 4px;
+      z-index: 90;
+      pointer-events: none;
+      animation: fall 1.8s ease forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .hero, main {
+        grid-template-columns: 1fr;
+      }
+
+      .playlist {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .hero-card {
+        min-height: auto;
+        gap: 28px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .song-input {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="blob one"></div>
+  <div class="blob two"></div>
+
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">🎧</div>
+        <div>
+          <h1>PhotoVibes</h1>
+          <p>Tu galería + playlist con vibes de película.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="themeBtn">🌙 Modo</button>
+        <button id="surpriseBtn" class="primary">✨ Sorpréndeme</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="panel hero-card">
+        <div class="hero-title">
+          <h2>Fotos que suenan. Música que se mira.</h2>
+          <p>Sube tus fotos, arma una galería tipo moodboard y pega links de YouTube Music o YouTube para crear una playlist visual e interactiva.</p>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <strong id="photoCount">0</strong>
+            <span>fotos cargadas</span>
+          </div>
+          <div class="stat">
+            <strong id="likedCount">0</strong>
+            <span>favoritas</span>
+          </div>
+          <div class="stat">
+            <strong id="songCount">5</strong>
+            <span>canciones</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dropzone" id="dropzone">
+        <div class="drop-inner">
+          <div class="drop-icon">📸</div>
+          <h3>Arrastra tus fotos aquí</h3>
+          <p>También puedes subir varias imágenes desde tu PC.</p>
+          <label class="file-label primary" for="fileInput">Subir fotos</label>
+          <input type="file" id="fileInput" multiple accept="image/*" />
+        </div>
+      </div>
+    </section>
+
+    <section class="panel toolbar">
+      <div class="search">
+        <span>🔎</span>
+        <input id="searchInput" placeholder="Buscar por nombre de foto..." />
+      </div>
+      <div class="chips">
+        <div class="chip active" data-filter="all">Todas</div>
+        <div class="chip" data-filter="liked">Favoritas</div>
+        <div class="chip" data-filter="recent">Recientes</div>
+      </div>
+    </section>
+
+    <main>
+      <section class="panel">
+        <div class="gallery" id="gallery"></div>
+        <div class="empty" id="emptyState">Sube fotos para que esta zona se convierta en tu álbum interactivo.</div>
+      </section>
+
+      <aside class="panel playlist">
+        <div class="player-shell">
+          <iframe id="ytPlayer" src="https://www.youtube.com/embed/kJQP7kiw5Fk" title="YouTube player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+
+        <div class="now-playing">
+          <small>Reproduciendo ahora</small>
+          <h3 id="nowTitle">Luis Fonsi - Despacito ft. Daddy Yankee</h3>
+          <div class="visualizer" aria-hidden="true">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          </div>
+        </div>
+
+        <div class="song-input">
+          <input id="songUrl" placeholder="Pega un link de YouTube Music o YouTube" />
+          <button id="addSong" class="primary">Agregar</button>
+        </div>
+
+        <div class="song-list" id="songList"></div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content">
+      <img id="lightboxImg" alt="Foto ampliada" />
+      <div class="lightbox-controls">
+        <button id="prevPhoto">⬅ Anterior</button>
+        <button id="closeLightbox" class="primary">Cerrar</button>
+        <button id="nextPhoto">Siguiente ➡</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Listo</div>
+
+  <script>
+    const starterPhotos = [
+      {
+        name: "Neon city",
+        src: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80",
+        liked: false,
+        created: Date.now() - 50000
+      },
+      {
+        name: "Road trip",
+        src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+        liked: true,
+        created: Date.now() - 42000
+      },
+      {
+        name: "Sunset mood",
+        src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=900&q=80",
+        liked: false,
+        created: Date.now() - 35000
+      },
+      {
+        name: "Night lights",
+        src: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80",
+        liked: false,
+        created: Date.now() - 26000
+      },
+      {
+        name: "Golden hour",
+        src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+        liked: true,
+        created: Date.now() - 15000
+      },
+      {
+        name: "Concert vibe",
+        src: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80",
+        liked: false,
+        created: Date.now() - 8000
+      }
+    ];
+
+    const starterSongs = [
+      { title: "Luis Fonsi - Despacito ft. Daddy Yankee", id: "kJQP7kiw5Fk" },
+      { title: "The Weeknd - Blinding Lights", id: "4NRXx6U8ABQ" },
+      { title: "Dua Lipa - Levitating", id: "TUVcZfQe-Kw" },
+      { title: "Coldplay - A Sky Full Of Stars", id: "VPRjCeoBqrI" },
+      { title: "Imagine Dragons - Believer", id: "7wtfhZwyrcc" }
+    ];
+
+    let photos = JSON.parse(localStorage.getItem("photovibes_photos") || "null") || starterPhotos;
+    let songs = JSON.parse(localStorage.getItem("photovibes_songs") || "null") || starterSongs;
+    let activeSong = Number(localStorage.getItem("photovibes_activeSong") || 0);
+    let activeFilter = "all";
+    let currentLightboxIndex = 0;
+    let filteredPhotos = [];
+
+    const gallery = document.getElementById("gallery");
+    const emptyState = document.getElementById("emptyState");
+    const fileInput = document.getElementById("fileInput");
+    const dropzone = document.getElementById("dropzone");
+    const photoCount = document.getElementById("photoCount");
+    const likedCount = document.getElementById("likedCount");
+    const songCount = document.getElementById("songCount");
+    const searchInput = document.getElementById("searchInput");
+    const songList = document.getElementById("songList");
+    const ytPlayer = document.getElementById("ytPlayer");
+    const nowTitle = document.getElementById("nowTitle");
+    const songUrl = document.getElementById("songUrl");
+    const addSong = document.getElementById("addSong");
+    const themeBtn = document.getElementById("themeBtn");
+    const surpriseBtn = document.getElementById("surpriseBtn");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const closeLightbox = document.getElementById("closeLightbox");
+    const prevPhoto = document.getElementById("prevPhoto");
+    const nextPhoto = document.getElementById("nextPhoto");
+    const toast = document.getElementById("toast");
+
+    function save() {
+      localStorage.setItem("photovibes_photos", JSON.stringify(photos));
+      localStorage.setItem("photovibes_songs", JSON.stringify(songs));
+      localStorage.setItem("photovibes_activeSong", String(activeSong));
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function updateStats() {
+      photoCount.textContent = photos.length;
+      likedCount.textContent = photos.filter(photo => photo.liked).length;
+      songCount.textContent = songs.length;
+    }
+
+    function renderGallery() {
+      const query = searchInput.value.trim().toLowerCase();
+      filteredPhotos = photos.filter(photo => {
+        const matchesSearch = photo.name.toLowerCase().includes(query);
+        const matchesFilter =
+          activeFilter === "all" ||
+          (activeFilter === "liked" && photo.liked) ||
+          (activeFilter === "recent" && Date.now() - photo.created < 1000 * 60 * 60 * 24 * 7);
+        return matchesSearch && matchesFilter;
+      });
+
+      gallery.innerHTML = "";
+      emptyState.style.display = filteredPhotos.length ? "none" : "block";
+
+      filteredPhotos.forEach((photo, index) => {
+        const originalIndex = photos.indexOf(photo);
+        const card = document.createElement("article");
+        card.className = "photo-card";
+        card.style.animationDelay = `${index * 0.055}s`;
+        card.innerHTML = `
+          <img src="${photo.src}" alt="${photo.name}">
+          <div class="photo-info">
+            <div>
+              <strong>${photo.name}</strong>
+              <span>${photo.liked ? "Favorita" : "Click para ampliar"}</span>
+            </div>
+            <button class="heart ${photo.liked ? "liked" : ""}" title="Favorito">❤</button>
+          </div>
+        `;
+
+        card.addEventListener("click", () => openLightbox(index));
+        card.querySelector(".heart").addEventListener("click", event => {
+          event.stopPropagation();
+          photos[originalIndex].liked = !photos[originalIndex].liked;
+          save();
+          renderGallery();
+          updateStats();
+          showToast(photos[originalIndex].liked ? "Foto guardada en favoritas ❤" : "Foto quitada de favoritas");
+        });
+
+        gallery.appendChild(card);
+      });
+    }
+
+    function renderSongs() {
+      songList.innerHTML = "";
+      songs.forEach((song, index) => {
+        const item = document.createElement("div");
+        item.className = `song ${index === activeSong ? "active" : ""}`;
+        item.innerHTML = `
+          <div class="song-cover">${index + 1}</div>
+          <div>
+            <strong>${song.title}</strong>
+            <span>Video ID: ${song.id}</span>
+          </div>
+          <button class="mini-btn" title="Eliminar">×</button>
+        `;
+
+        item.addEventListener("click", () => playSong(index));
+        item.querySelector("button").addEventListener("click", event => {
+          event.stopPropagation();
+          if (songs.length === 1) {
+            showToast("Deja al menos una canción en la playlist");
+            return;
+          }
+          songs.splice(index, 1);
+          activeSong = Math.min(activeSong, songs.length - 1);
+          save();
+          renderSongs();
+          playSong(activeSong);
+          updateStats();
+          showToast("Canción eliminada");
+        });
+
+        songList.appendChild(item);
+      });
+    }
+
+    function playSong(index) {
+      activeSong = index;
+      const song = songs[index];
+      ytPlayer.src = `https://www.youtube.com/embed/${song.id}?autoplay=1&rel=0`;
+      nowTitle.textContent = song.title;
+      save();
+      renderSongs();
+    }
+
+    function extractYouTubeId(url) {
+      const patterns = [
+        /youtube\.com\/watch\?v=([^&]+)/,
+        /music\.youtube\.com\/watch\?v=([^&]+)/,
+        /youtu\.be\/([^?&]+)/,
+        /youtube\.com\/embed\/([^?&]+)/,
+        /youtube\.com\/shorts\/([^?&]+)/
+      ];
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) return match[1];
+      }
+      if (/^[a-zA-Z0-9_-]{11}$/.test(url.trim())) return url.trim();
+      return null;
+    }
+
+    function addSongFromInput() {
+      const value = songUrl.value.trim();
+      const id = extractYouTubeId(value);
+      if (!id) {
+        showToast("Pega un link válido de YouTube Music o YouTube");
+        return;
+      }
+      const title = prompt("Nombre de la canción:", "Nueva canción de mi playlist") || "Nueva canción";
+      songs.push({ title, id });
+      songUrl.value = "";
+      save();
+      renderSongs();
+      updateStats();
+      playSong(songs.length - 1);
+      confetti();
+      showToast("Canción agregada a la playlist 🎵");
+    }
+
+    function handleFiles(files) {
+      [...files].filter(file => file.type.startsWith("image/")).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = event => {
+          photos.unshift({
+            name: file.name.replace(/\.[^/.]+$/, ""),
+            src: event.target.result,
+            liked: false,
+            created: Date.now()
+          });
+          save();
+          renderGallery();
+          updateStats();
+        };
+        reader.readAsDataURL(file);
+      });
+      confetti();
+      showToast("Fotos agregadas al álbum 📸");
+    }
+
+    function openLightbox(index) {
+      currentLightboxIndex = index;
+      lightboxImg.src = filteredPhotos[index].src;
+      lightbox.classList.add("open");
+    }
+
+    function moveLightbox(direction) {
+      if (!filteredPhotos.length) return;
+      currentLightboxIndex = (currentLightboxIndex + direction + filteredPhotos.length) % filteredPhotos.length;
+      lightboxImg.src = filteredPhotos[currentLightboxIndex].src;
+    }
+
+    function confetti() {
+      for (let i = 0; i < 38; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = `hsl(${Math.random() * 360}, 95%, 65%)`;
+        piece.style.animationDelay = `${Math.random() * 0.45}s`;
+        piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 2300);
+      }
+    }
+
+    document.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        document.querySelectorAll(".chip").forEach(item => item.classList.remove("active"));
+        chip.classList.add("active");
+        activeFilter = chip.dataset.filter;
+        renderGallery();
+      });
+    });
+
+    fileInput.addEventListener("change", event => handleFiles(event.target.files));
+    searchInput.addEventListener("input", renderGallery);
+    addSong.addEventListener("click", addSongFromInput);
+    songUrl.addEventListener("keydown", event => {
+      if (event.key === "Enter") addSongFromInput();
+    });
+
+    dropzone.addEventListener("dragover", event => {
+      event.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+
+    dropzone.addEventListener("drop", event => {
+      event.preventDefault();
+      dropzone.classList.remove("dragover");
+      handleFiles(event.dataTransfer.files);
+    });
+
+    themeBtn.addEventListener("click", () => {
+      const body = document.body;
+      const isLight = body.dataset.theme === "light";
+      body.dataset.theme = isLight ? "dark" : "light";
+      themeBtn.textContent = isLight ? "🌙 Modo" : "☀️ Modo";
+    });
+
+    surpriseBtn.addEventListener("click", () => {
+      const randomSong = Math.floor(Math.random() * songs.length);
+      const filters = ["all", "liked", "recent"];
+      activeFilter = filters[Math.floor(Math.random() * filters.length)];
+      document.querySelectorAll(".chip").forEach(chip => {
+        chip.classList.toggle("active", chip.dataset.filter === activeFilter);
+      });
+      playSong(randomSong);
+      renderGallery();
+      confetti();
+      showToast("Nueva vibra activada ✨");
+    });
+
+    closeLightbox.addEventListener("click", () => lightbox.classList.remove("open"));
+    prevPhoto.addEventListener("click", () => moveLightbox(-1));
+    nextPhoto.addEventListener("click", () => moveLightbox(1));
+    lightbox.addEventListener("click", event => {
+      if (event.target === lightbox) lightbox.classList.remove("open");
+    });
+
+    window.addEventListener("keydown", event => {
+      if (!lightbox.classList.contains("open")) return;
+      if (event.key === "Escape") lightbox.classList.remove("open");
+      if (event.key === "ArrowLeft") moveLightbox(-1);
+      if (event.key === "ArrowRight") moveLightbox(1);
+    });
+
+    updateStats();
+    renderGallery();
+    renderSongs();
+    playSong(activeSong);
+  </script>
+</body>
+</html>
