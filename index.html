@@ -15,6 +15,9 @@
       --accent2: #4ee7ff;
       --shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
       --radius: 26px;
+      --beat: 0;
+      --wave-x: 50%;
+      --wave-y: 50%;
     }
 
     [data-theme="light"] {
@@ -55,7 +58,44 @@
         linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
       background-size: 44px 44px;
       mask-image: linear-gradient(to bottom, black, transparent 86%);
+      z-index: -3;
+      transform: scale(calc(1 + var(--beat) * 0.012));
+    }
+
+    .sound-wave-field {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
       z-index: -2;
+      overflow: hidden;
+    }
+
+    .sound-wave-field::before,
+    .sound-wave-field::after {
+      content: "";
+      position: absolute;
+      left: var(--wave-x);
+      top: var(--wave-y);
+      width: calc(280px + var(--beat) * 260px);
+      height: calc(280px + var(--beat) * 260px);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(calc(1 + var(--beat) * 0.6));
+      border: 2px solid rgba(78, 231, 255, 0.28);
+      box-shadow: 0 0 80px rgba(255, 78, 205, 0.16), inset 0 0 80px rgba(78, 231, 255, 0.12);
+      opacity: calc(0.18 + var(--beat) * 0.55);
+      transition: 0.08s linear;
+    }
+
+    .sound-wave-field::after {
+      width: calc(560px + var(--beat) * 300px);
+      height: calc(560px + var(--beat) * 300px);
+      border-color: rgba(255, 78, 205, 0.22);
+      filter: blur(2px);
+      animation: waveSpin 8s linear infinite;
+    }
+
+    @keyframes waveSpin {
+      to { rotate: 360deg; }
     }
 
     .blob {
@@ -64,9 +104,10 @@
       height: 360px;
       border-radius: 999px;
       filter: blur(34px);
-      opacity: 0.35;
+      opacity: calc(0.28 + var(--beat) * 0.38);
       z-index: -1;
       animation: float 9s ease-in-out infinite alternate;
+      transform: scale(calc(1 + var(--beat) * 0.22));
     }
 
     .blob.one {
@@ -83,14 +124,16 @@
     }
 
     @keyframes float {
-      from { transform: translate3d(0, 0, 0) scale(1); }
-      to { transform: translate3d(32px, -28px, 0) scale(1.08); }
+      from { translate: 0 0; }
+      to { translate: 32px -28px; }
     }
 
     .app {
       width: min(1240px, calc(100% - 32px));
       margin: 0 auto;
       padding: 28px 0 52px;
+      transform: translateY(calc(var(--beat) * -7px)) scale(calc(1 + var(--beat) * 0.006));
+      transition: transform 0.08s linear;
     }
 
     header {
@@ -116,7 +159,8 @@
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       box-shadow: 0 14px 44px rgba(255, 78, 205, 0.28);
       font-size: 1.45rem;
-      transform: rotate(-5deg);
+      transform: rotate(calc(-5deg + var(--beat) * 18deg)) scale(calc(1 + var(--beat) * 0.12));
+      transition: 0.08s linear;
     }
 
     h1 {
@@ -178,6 +222,10 @@
       overflow: hidden;
     }
 
+    body.music-on .panel {
+      box-shadow: 0 calc(20px + var(--beat) * 20px) calc(70px + var(--beat) * 45px) rgba(0, 0, 0, 0.36), 0 0 calc(var(--beat) * 45px) rgba(78, 231, 255, 0.22);
+    }
+
     .hero-card {
       min-height: 360px;
       padding: 30px;
@@ -197,6 +245,7 @@
       top: -74px;
       background: linear-gradient(135deg, rgba(255,78,205,0.35), rgba(78,231,255,0.3));
       filter: blur(4px);
+      transform: scale(calc(1 + var(--beat) * 0.35));
     }
 
     .hero-title {
@@ -209,6 +258,7 @@
       font-size: clamp(2.1rem, 6vw, 5.2rem);
       letter-spacing: -0.08em;
       line-height: 0.88;
+      text-shadow: 0 0 calc(var(--beat) * 28px) rgba(78, 231, 255, 0.5);
     }
 
     .hero-title p {
@@ -376,6 +426,10 @@
       animation: reveal 0.55s ease forwards;
     }
 
+    body.music-on .photo-card {
+      filter: saturate(calc(1 + var(--beat) * 0.28));
+    }
+
     @keyframes reveal {
       to { opacity: 1; transform: translateY(0); }
     }
@@ -449,6 +503,8 @@
       aspect-ratio: 16 / 9;
       box-shadow: 0 20px 60px rgba(0,0,0,0.28);
       position: relative;
+      transform: scale(calc(1 + var(--beat) * 0.015));
+      transition: 0.08s linear;
     }
 
     iframe {
@@ -489,10 +545,12 @@
     .bar {
       flex: 1;
       min-width: 5px;
+      height: calc(18% + var(--beat) * 78%);
       border-radius: 999px;
       background: linear-gradient(to top, var(--accent), var(--accent2));
       animation: equalize 1.1s ease-in-out infinite alternate;
       opacity: 0.9;
+      transition: height 0.08s linear;
     }
 
     .bar:nth-child(2) { animation-delay: -0.2s; }
@@ -504,8 +562,8 @@
     .bar:nth-child(8) { animation-delay: -0.9s; }
 
     @keyframes equalize {
-      from { height: 16%; }
-      to { height: 95%; }
+      from { transform: scaleY(0.35); }
+      to { transform: scaleY(1); }
     }
 
     .song-input {
@@ -520,6 +578,13 @@
 
     .song-input input {
       padding-left: 8px;
+    }
+
+    .song-hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+      margin: -4px 4px 12px;
     }
 
     .song-list {
@@ -548,6 +613,11 @@
       transform: translateX(3px);
     }
 
+    .song.active .song-cover {
+      transform: scale(calc(1 + var(--beat) * 0.25));
+      box-shadow: 0 0 calc(18px + var(--beat) * 25px) rgba(78, 231, 255, 0.4);
+    }
+
     .song-cover {
       width: 42px;
       height: 42px;
@@ -557,6 +627,7 @@
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       color: #fff;
       font-weight: 900;
+      transition: 0.08s linear;
     }
 
     .song strong {
@@ -699,6 +770,7 @@
   </style>
 </head>
 <body data-theme="dark">
+  <div class="sound-wave-field"></div>
   <div class="blob one"></div>
   <div class="blob two"></div>
 
@@ -721,7 +793,7 @@
       <div class="panel hero-card">
         <div class="hero-title">
           <h2>Fotos que suenan. Música que se mira.</h2>
-          <p>Sube tus fotos, arma una galería tipo moodboard y pega links de YouTube Music o YouTube para crear una playlist visual e interactiva.</p>
+          <p>Sube tus fotos, arma una galería tipo moodboard y escribe el nombre de una canción o artista para crear una playlist visual e interactiva.</p>
         </div>
         <div class="stats">
           <div class="stat">
@@ -753,7 +825,7 @@
     <section class="panel toolbar">
       <div class="search">
         <span>🔎</span>
-        <input id="searchInput" placeholder="Buscar por nombre de foto..." />
+        <input id="searchInput" placeholder="Buscar foto por nombre..." />
       </div>
       <div class="chips">
         <div class="chip active" data-filter="all">Todas</div>
@@ -783,9 +855,10 @@
         </div>
 
         <div class="song-input">
-          <input id="songUrl" placeholder="Pega un link de YouTube Music o YouTube" />
-          <button id="addSong" class="primary">Agregar</button>
+          <input id="songName" placeholder="Escribe una canción, artista o género" />
+          <button id="addSong" class="primary">Buscar</button>
         </div>
+        <p class="song-hint">Ejemplo: Bad Bunny Tití Me Preguntó, Feid Luna, Shakira Acróstico. También acepta links si pegas uno.</p>
 
         <div class="song-list" id="songList"></div>
       </aside>
@@ -846,11 +919,11 @@
     ];
 
     const starterSongs = [
-      { title: "Luis Fonsi - Despacito ft. Daddy Yankee", id: "kJQP7kiw5Fk" },
-      { title: "The Weeknd - Blinding Lights", id: "4NRXx6U8ABQ" },
-      { title: "Dua Lipa - Levitating", id: "TUVcZfQe-Kw" },
-      { title: "Coldplay - A Sky Full Of Stars", id: "VPRjCeoBqrI" },
-      { title: "Imagine Dragons - Believer", id: "7wtfhZwyrcc" }
+      { title: "Luis Fonsi - Despacito ft. Daddy Yankee", id: "kJQP7kiw5Fk", query: "Luis Fonsi Despacito Daddy Yankee" },
+      { title: "The Weeknd - Blinding Lights", id: "4NRXx6U8ABQ", query: "The Weeknd Blinding Lights" },
+      { title: "Dua Lipa - Levitating", id: "TUVcZfQe-Kw", query: "Dua Lipa Levitating" },
+      { title: "Coldplay - A Sky Full Of Stars", id: "VPRjCeoBqrI", query: "Coldplay A Sky Full Of Stars" },
+      { title: "Imagine Dragons - Believer", id: "7wtfhZwyrcc", query: "Imagine Dragons Believer" }
     ];
 
     let photos = JSON.parse(localStorage.getItem("photovibes_photos") || "null") || starterPhotos;
@@ -859,6 +932,8 @@
     let activeFilter = "all";
     let currentLightboxIndex = 0;
     let filteredPhotos = [];
+    let waveRunning = true;
+    let beatClock = 0;
 
     const gallery = document.getElementById("gallery");
     const emptyState = document.getElementById("emptyState");
@@ -871,7 +946,7 @@
     const songList = document.getElementById("songList");
     const ytPlayer = document.getElementById("ytPlayer");
     const nowTitle = document.getElementById("nowTitle");
-    const songUrl = document.getElementById("songUrl");
+    const songName = document.getElementById("songName");
     const addSong = document.getElementById("addSong");
     const themeBtn = document.getElementById("themeBtn");
     const surpriseBtn = document.getElementById("surpriseBtn");
@@ -949,11 +1024,12 @@
       songs.forEach((song, index) => {
         const item = document.createElement("div");
         item.className = `song ${index === activeSong ? "active" : ""}`;
+        const sourceText = song.id ? "Video directo" : "Búsqueda por nombre";
         item.innerHTML = `
           <div class="song-cover">${index + 1}</div>
           <div>
             <strong>${song.title}</strong>
-            <span>Video ID: ${song.id}</span>
+            <span>${sourceText}</span>
           </div>
           <button class="mini-btn" title="Eliminar">×</button>
         `;
@@ -981,8 +1057,16 @@
     function playSong(index) {
       activeSong = index;
       const song = songs[index];
-      ytPlayer.src = `https://www.youtube.com/embed/${song.id}?autoplay=1&rel=0`;
+      const query = encodeURIComponent(song.query || song.title);
+
+      if (song.id) {
+        ytPlayer.src = `https://www.youtube.com/embed/${song.id}?autoplay=1&rel=0`;
+      } else {
+        ytPlayer.src = `https://www.youtube.com/embed?listType=search&list=${query}&autoplay=1&rel=0`;
+      }
+
       nowTitle.textContent = song.title;
+      document.body.classList.add("music-on");
       save();
       renderSongs();
     }
@@ -1003,22 +1087,26 @@
       return null;
     }
 
-    function addSongFromInput() {
-      const value = songUrl.value.trim();
-      const id = extractYouTubeId(value);
-      if (!id) {
-        showToast("Pega un link válido de YouTube Music o YouTube");
+    function addSongByName() {
+      const value = songName.value.trim();
+      if (!value) {
+        showToast("Escribe el nombre de una canción o artista");
         return;
       }
-      const title = prompt("Nombre de la canción:", "Nueva canción de mi playlist") || "Nueva canción";
-      songs.push({ title, id });
-      songUrl.value = "";
+
+      const id = extractYouTubeId(value);
+      const newSong = id
+        ? { title: "Canción agregada por link", id, query: value }
+        : { title: value, id: null, query: value };
+
+      songs.push(newSong);
+      songName.value = "";
       save();
       renderSongs();
       updateStats();
       playSong(songs.length - 1);
       confetti();
-      showToast("Canción agregada a la playlist 🎵");
+      showToast(id ? "Canción agregada por link 🎵" : "Búsqueda agregada por nombre 🎵");
     }
 
     function handleFiles(files) {
@@ -1066,6 +1154,23 @@
       }
     }
 
+    function animateMusicWaves() {
+      beatClock += 0.055;
+      const pulseA = (Math.sin(beatClock * 3.2) + 1) / 2;
+      const pulseB = (Math.sin(beatClock * 5.7 + 1.4) + 1) / 2;
+      const kick = Math.pow(pulseA, 7);
+      const softWave = pulseB * 0.32;
+      const beat = Math.min(1, kick * 0.9 + softWave);
+      const x = 50 + Math.sin(beatClock * 0.9) * 24;
+      const y = 50 + Math.cos(beatClock * 0.7) * 18;
+
+      document.documentElement.style.setProperty("--beat", beat.toFixed(3));
+      document.documentElement.style.setProperty("--wave-x", `${x.toFixed(1)}%`);
+      document.documentElement.style.setProperty("--wave-y", `${y.toFixed(1)}%`);
+
+      requestAnimationFrame(animateMusicWaves);
+    }
+
     document.querySelectorAll(".chip").forEach(chip => {
       chip.addEventListener("click", () => {
         document.querySelectorAll(".chip").forEach(item => item.classList.remove("active"));
@@ -1077,9 +1182,9 @@
 
     fileInput.addEventListener("change", event => handleFiles(event.target.files));
     searchInput.addEventListener("input", renderGallery);
-    addSong.addEventListener("click", addSongFromInput);
-    songUrl.addEventListener("keydown", event => {
-      if (event.key === "Enter") addSongFromInput();
+    addSong.addEventListener("click", addSongByName);
+    songName.addEventListener("keydown", event => {
+      if (event.key === "Enter") addSongByName();
     });
 
     dropzone.addEventListener("dragover", event => {
@@ -1133,6 +1238,7 @@
     renderGallery();
     renderSongs();
     playSong(activeSong);
+    animateMusicWaves();
   </script>
 </body>
 </html>
